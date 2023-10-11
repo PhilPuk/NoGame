@@ -1,3 +1,11 @@
+/*
+# ----------------------------------------------
+# File: simple_logger.cpp
+# Author: https://github.com/Pilzschaf
+# Description: This file was not coded by me, but by another author.
+# ----------------------------------------------
+*/
+
 #include <iostream>
 
 void initLogger() {

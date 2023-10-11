@@ -1,3 +1,11 @@
+/*
+# ----------------------------------------------
+# File: logger.h
+# Author: https://github.com/Pilzschaf
+# Description: This file was not coded by me, but by another author.
+# ----------------------------------------------
+*/
+
 #pragma once
 #include <string.h>
 #include <stdint.h>
