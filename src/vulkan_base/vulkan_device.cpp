@@ -86,7 +86,56 @@ bool selectPhysicalDevice(VulkanContext* context)
 	return true;
 }
 
-VulkanContext* initVulkan(uint32_t instanceExtensionCount, const char** instanceExtensions)
+bool createLogicalDevice(VulkanContext* context, uint32_t deviceExtensionCount, const char** devicesExtensions)
+{
+	//Queues
+	uint32_t numQueueFamilies = 0;
+	vkGetPhysicalDeviceQueueFamilyProperties(context->physicalDevice, &numQueueFamilies, 0);
+	VkQueueFamilyProperties* queueFamilyProperties = new VkQueueFamilyProperties[numQueueFamilies];
+	vkGetPhysicalDeviceQueueFamilyProperties(context->physicalDevice, &numQueueFamilies, queueFamilyProperties);	
+
+	uint32_t graphicsQueueIndex = 0;
+	for (uint32_t i = 0; i < numQueueFamilies; ++i)
+	{
+		VkQueueFamilyProperties queueFamily = queueFamilyProperties[i];
+		if (queueFamily.queueCount > 0)
+		{
+			if (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT)
+			{
+				graphicsQueueIndex = i;
+				break;
+			}
+		}
+	}
+
+	float priorities[] = { 1.0f };
+	VkDeviceQueueCreateInfo queueCreateInfo = { VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO };
+	queueCreateInfo.queueFamilyIndex = graphicsQueueIndex;
+	queueCreateInfo.queueCount = 1;
+	queueCreateInfo.pQueuePriorities = priorities;
+
+	VkPhysicalDeviceFeatures enabledFeatures = {};
+	VkDeviceCreateInfo createInfo = { VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO };
+	createInfo.queueCreateInfoCount = 1;
+	createInfo.pQueueCreateInfos = &queueCreateInfo;
+	createInfo.enabledExtensionCount = deviceExtensionCount;
+	createInfo.ppEnabledExtensionNames = devicesExtensions;
+	createInfo.pEnabledFeatures = &enabledFeatures;
+
+	if (vkCreateDevice(context->physicalDevice, &createInfo, 0, &context->device))
+	{
+		LOG_ERROR("Failed to create vulkan logical device");
+		return false;
+	}
+
+	// Acquire graphics queues
+	context->graphicsQueue.FamilyIndex = graphicsQueueIndex;
+	VK(vkGetDeviceQueue(context->device, graphicsQueueIndex, 0, &context->graphicsQueue.queue));
+
+	return true;
+}
+
+VulkanContext* initVulkan(uint32_t instanceExtensionCount, const char** instanceExtensions, uint32_t deviceExtensionCount, const char** devicesExtensions)
 {
 	VulkanContext* context = new VulkanContext;
 
@@ -100,5 +149,18 @@ VulkanContext* initVulkan(uint32_t instanceExtensionCount, const char** instance
 		return 0;
 	}
 
+	if (!createLogicalDevice(context, deviceExtensionCount, devicesExtensions))
+	{
+		return 0;
+	}
+
 	return context;
+}
+
+void exitVulkan(VulkanContext* context)
+{
+	VKA(vkDeviceWaitIdle(context->device));
+	VK(vkDestroyDevice(context->device, 0));
+
+	vkDestroyInstance(context->instance, 0);
 }
