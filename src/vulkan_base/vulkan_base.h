@@ -2,6 +2,7 @@
 
 #include <vulkan/vulkan.h>
 #include<cassert>
+#include<vector>
 
 #define ASSERT_VULKAN(val) if (val != VK_SUCCESS) {LOG_ERROR("Vulkan error: ", val); assert(false);}
 
@@ -22,7 +23,16 @@
 struct VulkanQueue
 {
 	VkQueue queue;
-	uint32_t FamilyIndex;
+	uint32_t familyIndex;
+};
+
+struct VulkanSwapchain
+{
+	VkSwapchainKHR swapchain;
+	uint32_t width;
+	uint32_t height;
+	VkFormat format;
+	std::vector<VkImage> images;
 };
 
 struct VulkanContext 
@@ -36,3 +46,6 @@ struct VulkanContext
 
 VulkanContext* initVulkan(uint32_t instanceExtensionCount, const char** instanceExtensions, uint32_t deviceExtensionCount, const char** devicesExtensions);
 void exitVulkan(VulkanContext* context);
+
+VulkanSwapchain createSwapchain(VulkanContext* context, VkSurfaceKHR surface, VkImageUsageFlags usage);
+void destroySwapchain(VulkanContext* context, VulkanSwapchain* swapchain);

@@ -28,7 +28,7 @@ int main()
 		return 1;
 	}
 
-	SDL_Window* window = SDL_CreateWindow("NoGame_Game_Engine", 1240, 720, SDL_WINDOW_VULKAN);
+	SDL_Window* window = SDL_CreateWindow("NoGame_Game_Engine", 1280, 720, SDL_WINDOW_VULKAN);
 	if (!window) 
 	{
 		LOG_ERROR("Error creating SDL window");
@@ -40,13 +40,20 @@ int main()
 	const char** enabledInstanceExtensions = new const char*[instanceExtensionCount];
 	SDL_Vulkan_GetInstanceExtensions(&instanceExtensionCount, enabledInstanceExtensions);
 
-	VulkanContext* context = initVulkan(instanceExtensionCount, enabledInstanceExtensions, 0, 0);
+	const char* enabledDeviceExtensions[] = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
+	VulkanContext* context = initVulkan(instanceExtensionCount, enabledInstanceExtensions, ARRAY_COUNT(enabledDeviceExtensions), enabledDeviceExtensions);
+	VkSurfaceKHR surface;
+	SDL_Vulkan_CreateSurface(window, context->instance, &surface);
+	VulkanSwapchain swapchain = createSwapchain(context, surface, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT);
 
 	while (handleMessage()) 
 	{
 		//TODO: Render with Vulkan
 	}
 
+	VKA(vkDeviceWaitIdle(context->device));
+	destroySwapchain(context, &swapchain);
+	VK(vkDestroySurfaceKHR(context->instance, surface, 0));
 	exitVulkan(context);
 
 	SDL_DestroyWindow(window);

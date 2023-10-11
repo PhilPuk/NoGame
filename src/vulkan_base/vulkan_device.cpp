@@ -19,7 +19,7 @@ bool initVulkanInstance(VulkanContext* context, uint32_t instanceExtensionCount,
 		"VK_LAYER_KHRONOS_validation",
 	};
 
-	/*
+#ifdef VULKAN_INFO_OUTPUT
 	uint32_t availableInstanceExtensionCount = 0;
 	VKA(vkEnumerateInstanceExtensionProperties(0, &availableInstanceExtensionCount, 0));
 	VkExtensionProperties* instanceExtensionProperties = new VkExtensionProperties[availableInstanceExtensionCount];
@@ -29,7 +29,7 @@ bool initVulkanInstance(VulkanContext* context, uint32_t instanceExtensionCount,
 		LOG_INFO(instanceExtensionProperties[i].extensionName);
 	}
 	delete[] instanceExtensionProperties;
-	*/
+#endif
 
 	VkApplicationInfo applicationInfo = { VK_STRUCTURE_TYPE_APPLICATION_INFO };
 	applicationInfo.pApplicationName = "Vulkan Tutorial";
@@ -129,7 +129,7 @@ bool createLogicalDevice(VulkanContext* context, uint32_t deviceExtensionCount, 
 	}
 
 	// Acquire graphics queues
-	context->graphicsQueue.FamilyIndex = graphicsQueueIndex;
+	context->graphicsQueue.familyIndex = graphicsQueueIndex;
 	VK(vkGetDeviceQueue(context->device, graphicsQueueIndex, 0, &context->graphicsQueue.queue));
 
 	return true;
