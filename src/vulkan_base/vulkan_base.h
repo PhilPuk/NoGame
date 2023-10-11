@@ -1,9 +1,23 @@
 #include "../logger.h"
 
 #include <vulkan/vulkan.h>
+#include<cassert>
 
-struct VulkanContext {
+#define ASSERT_VULKAN(val) if (val != VK_SUCCESS) {LOG_ERROR("Vulkan error: ", val); assert(false);}
+
+#ifndef VK
+#define VK(f) (f)
+#endif
+
+#ifndef VKA
+#define VKA(f) ASSERT_VULKAN(VK(f))
+#endif
+
+#define ARRAY_COUNT(array) (sizeof(array) / sizeof(array[0]))
+
+struct VulkanContext 
+{
 	VkInstance instance;
 };
 
-VulkanContext* initVulkan();
+VulkanContext* initVulkan(uint32_t instanceExtensionCount, const char** instanceExtensions);
