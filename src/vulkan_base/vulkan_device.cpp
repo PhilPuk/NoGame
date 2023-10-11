@@ -21,9 +21,9 @@ bool initVulkanInstance(VulkanContext* context, uint32_t instanceExtensionCount,
 
 	/*
 	uint32_t availableInstanceExtensionCount = 0;
-	vkEnumerateInstanceExtensionProperties(0, &availableInstanceExtensionCount, 0);
+	VKA(vkEnumerateInstanceExtensionProperties(0, &availableInstanceExtensionCount, 0));
 	VkExtensionProperties* instanceExtensionProperties = new VkExtensionProperties[availableInstanceExtensionCount];
-	vkEnumerateInstanceExtensionProperties(0, &availableInstanceExtensionCount, instanceExtensionProperties);
+	VKA(vkEnumerateInstanceExtensionProperties(0, &availableInstanceExtensionCount, instanceExtensionProperties));
 	for (uint32_t i = 0; i < availableInstanceExtensionCount; ++i)
 	{
 		LOG_INFO(instanceExtensionProperties[i].extensionName);
@@ -34,7 +34,7 @@ bool initVulkanInstance(VulkanContext* context, uint32_t instanceExtensionCount,
 	VkApplicationInfo applicationInfo = { VK_STRUCTURE_TYPE_APPLICATION_INFO };
 	applicationInfo.pApplicationName = "Vulkan Tutorial";
 	applicationInfo.applicationVersion = VK_MAKE_VERSION(0, 0, 1); // 0.0.1
-	applicationInfo.apiVersion = VK_VERSION_1_2;
+	applicationInfo.apiVersion = VK_API_VERSION_1_3;
 
 	VkInstanceCreateInfo createInfo = { VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO };
 	createInfo.pApplicationInfo = &applicationInfo;
@@ -52,11 +52,50 @@ bool initVulkanInstance(VulkanContext* context, uint32_t instanceExtensionCount,
 	return true;
 }
 
+bool selectPhysicalDevice(VulkanContext* context)
+{
+	uint32_t physicalDeviceCount = 0;
+	VKA(vkEnumeratePhysicalDevices(context->instance, &physicalDeviceCount, 0));
+
+	if (physicalDeviceCount == 0)
+	{
+		LOG_ERROR("Failed to find GPUs with Vulkan Support!");
+		context->physicalDevice = 0;
+		return false;
+	}
+
+	VkPhysicalDevice* physicalDevices = new VkPhysicalDevice[physicalDeviceCount];
+	VKA(vkEnumeratePhysicalDevices(context->instance, &physicalDeviceCount, physicalDevices));
+	LOG_INFO("Found ", physicalDeviceCount, " GPU(s):");
+
+	for (uint32_t i = 0; i < physicalDeviceCount; ++i)
+	{
+#ifdef VULKAN_INFO_OUTPUT
+		VkPhysicalDeviceProperties properties = {};
+		vkGetPhysicalDeviceProperties(physicalDevices[i], &properties);
+		LOG_INFO("GPU ", i, ": ", properties.deviceName);
+#endif
+	}
+
+	context->physicalDevice = physicalDevices[0];
+	VK(vkGetPhysicalDeviceProperties(context->physicalDevice, &context->physicalDeviceProperties));
+	LOG_INFO("Selected GPU: ", context->physicalDeviceProperties.deviceName);
+
+	delete[] physicalDevices;
+
+	return true;
+}
+
 VulkanContext* initVulkan(uint32_t instanceExtensionCount, const char** instanceExtensions)
 {
 	VulkanContext* context = new VulkanContext;
 
 	if (!initVulkanInstance(context, instanceExtensionCount, instanceExtensions))
+	{
+		return 0;
+	}
+
+	if (!selectPhysicalDevice(context))
 	{
 		return 0;
 	}
