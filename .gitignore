@@ -36,3 +36,6 @@ build/*
 
 # bin 
 bin/*
+
+# shaders
+shaders/*.spv

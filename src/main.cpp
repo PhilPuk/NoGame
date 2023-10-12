@@ -98,7 +98,7 @@ void shutdownApplication()
 void renderApplication()
 {
 	static float greenChannel = 0.0f;
-	greenChannel += 0.001f;
+	greenChannel += 0.01f;
 	if (greenChannel > 1.0f) greenChannel = 0.0f;
 
 	uint32_t imageIndex = 0;
