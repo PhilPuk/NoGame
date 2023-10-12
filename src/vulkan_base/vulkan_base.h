@@ -14,11 +14,11 @@
 #define VKA(f) ASSERT_VULKAN(VK(f))
 #endif
 
+#define ARRAY_COUNT(array) (sizeof(array) / sizeof(array[0]))
+
 //#ifndef VULKAN_INFO_OUTPUT
 //#define VULKAN_INFO_OUTPUT
 //#endif
-
-#define ARRAY_COUNT(array) (sizeof(array) / sizeof(array[0]))
 
 struct VulkanQueue
 {
@@ -33,6 +33,7 @@ struct VulkanSwapchain
 	uint32_t height;
 	VkFormat format;
 	std::vector<VkImage> images;
+	std::vector<VkImageView> imageViews;
 };
 
 struct VulkanContext 
@@ -49,3 +50,6 @@ void exitVulkan(VulkanContext* context);
 
 VulkanSwapchain createSwapchain(VulkanContext* context, VkSurfaceKHR surface, VkImageUsageFlags usage);
 void destroySwapchain(VulkanContext* context, VulkanSwapchain* swapchain);
+
+VkRenderPass createRenderPass(VulkanContext* context, VkFormat format);
+void destroyRenderPass(VulkanContext* context, VkRenderPass renderPass);
